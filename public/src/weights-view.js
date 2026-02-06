@@ -4,10 +4,10 @@ import { weightList } from "./dom.js";
 import { formatDateAsGerman } from "./utils.js";
 
 export function showAllWeights() {
-  return allWeightsNewestFirst().get().then(displayWeightsInList);
+  return allWeightsNewestFirst().get().then(renderWeightList);
 }
 
-function displayWeightsInList(weights) {
+export function renderWeightList(weights) {
   clearWeightList();
   weights.forEach(addWeightEntry);
 }

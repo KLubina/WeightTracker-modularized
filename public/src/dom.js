@@ -9,4 +9,9 @@ export const appContainer = () => getElementById("appContainer");
 export const setDisplayStyle = (element, displayValue) => {
   element.style.display = displayValue;
 };
+
+export function toggleUiState(isLoggedIn) {
+  setDisplayStyle(loginContainer(), isLoggedIn ? "none" : "flex");
+  setDisplayStyle(appContainer(), isLoggedIn ? "block" : "none");
+}
 // #endregion

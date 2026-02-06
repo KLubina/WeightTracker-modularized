@@ -24,14 +24,13 @@ const createHeaderRow = () => "Date,Weight";
 
 const createDataRows = (docs) => docs.map(documentAsCsvRow);
 
-const combineCsvRows = (header, dataRows) =>
-  [header, ...dataRows].join("\n");
+const combineCsvRows = (header, dataRows) => [header, ...dataRows].join("\n");
 
 function documentAsCsvRow(doc) {
   const data = doc.data();
   const date = formatDateAsGerman(data.datum.toDate());
   return `${date},${data.gewicht}`;
-};
+}
 
 function downloadCsvFile(csvContent) {
   if (!csvContent) return;
@@ -44,8 +43,7 @@ function downloadCsvFile(csvContent) {
   cleanupBlobUrl(downloadUrl);
 }
 
-const generateCsvFilename = () =>
-  `weight-tracker-${getCurrentDateAsISO()}.csv`;
+const generateCsvFilename = () => `weight-tracker-${getCurrentDateAsISO()}.csv`;
 
 const createCsvBlob = (content) =>
   new Blob([content], { type: "text/csv;charset=utf-8;" });
@@ -64,7 +62,7 @@ function createDownloadLink(url, filename) {
   link.href = url;
   link.download = filename;
   return link;
-};
+}
 
 const appendToBody = (element) => document.body.appendChild(element);
 const clickElement = (element) => element.click();

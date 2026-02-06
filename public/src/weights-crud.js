@@ -42,11 +42,14 @@ export function editWeight(id, currentWeight) {
   }
 }
 
-const promptForNewWeight = (currentWeight) => prompt("New weight:", currentWeight);
+const promptForNewWeight = (currentWeight) =>
+  prompt("New weight:", currentWeight);
 
-const hasValueChanged = (newValue, currentValue) => newValue && newValue !== currentValue;
+const hasValueChanged = (newValue, currentValue) =>
+  newValue && newValue !== currentValue;
 
-const updateWeightInDatabase = (id, newWeight) => weightWithId(id).update({ gewicht: newWeight });
+const updateWeightInDatabase = (id, newWeight) =>
+  weightWithId(id).update({ gewicht: newWeight });
 
 export function editDate(id, currentDateISO) {
   const currentDate = extractDateFromISO(currentDateISO);
@@ -58,9 +61,11 @@ export function editDate(id, currentDateISO) {
   }
 }
 
-const promptForNewDate = (currentDate) => prompt("New date (YYYY-MM-DD):", currentDate);
+const promptForNewDate = (currentDate) =>
+  prompt("New date (YYYY-MM-DD):", currentDate);
 
-const updateDateInDatabase = (id, newDate) => weightWithId(id).update({ datum: new Date(newDate) });
+const updateDateInDatabase = (id, newDate) =>
+  weightWithId(id).update({ datum: new Date(newDate) });
 
 // Für bestehende inline onclick-Handler (ohne neue Logik zu erfinden):
 // -> Globale Referenzen setzen:

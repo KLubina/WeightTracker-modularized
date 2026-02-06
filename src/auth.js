@@ -27,7 +27,4 @@ function showLoginError(error) {
   alert("Login fehlgeschlagen: " + error.message);
 }
 
-export function logout() {
-  auth.signOut();
-}
 // #endregion

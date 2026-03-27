@@ -9,29 +9,20 @@ export function startDemoMode() {
 
 function showDemoWeights() {
   clearWeightList();
-  const demoWeights = [
-    {
-      id: "demo1",
+  // Generiere Demo-Daten für die letzten 90 Tage (jeden 10. Tag ein Eintrag, heute immer dabei)
+  const today = new Date();
+  const demoWeights = [];
+  for (let i = 0; i <= 90; i += 10) {
+    const d = new Date(today);
+    d.setDate(today.getDate() - i);
+    demoWeights.push({
+      id: `demo${i}`,
       data: () => ({
-        gewicht: 85.5,
-        datum: { toDate: () => new Date("2023-10-25") },
+        gewicht: 85.5 + (i / 10) * 0.7, // kleine Variation
+        datum: { toDate: () => d },
       }),
-    },
-    {
-      id: "demo2",
-      data: () => ({
-        gewicht: 86.2,
-        datum: { toDate: () => new Date("2023-10-20") },
-      }),
-    },
-    {
-      id: "demo3",
-      data: () => ({
-        gewicht: 87.0,
-        datum: { toDate: () => new Date("2023-10-15") },
-      }),
-    },
-  ];
+    });
+  }
   renderWeightList(demoWeights);
 }
 // #endregion

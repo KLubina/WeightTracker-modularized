@@ -1,8 +1,8 @@
 // #region Event Handlers & Wiring
-import { getElementById } from "./dom.js";
-import { loginWithGoogle } from "./auth.js";
-import { startDemoMode } from "./demo.js";
-import { addNewWeight } from "./weights-crud.js";
+import { getElementById } from "../ui/dom.js";
+import { loginWithGoogle } from "../auth/auth.js";
+import { startDemoMode } from "../features/demo.js";
+import { addNewWeight } from "../data/weights-crud.js";
 
 export function attachEventListeners() {
   getElementById("weightInput").addEventListener("keypress", onEnterKeyPressed);

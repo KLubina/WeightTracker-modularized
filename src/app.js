@@ -1,7 +1,7 @@
 // #region Initialization
-import { attachEventListeners } from "./events.js";
-import { handleAuthChanged } from "./auth.js";
-import { exportToCsv } from "./csv.js";
+import { attachEventListeners } from "./shared/events.js";
+import { handleAuthChanged } from "./auth/auth.js";
+import { exportToCsv } from "./features/csv.js";
 
 window.exportToCsv = exportToCsv; // Expose for onclick
 

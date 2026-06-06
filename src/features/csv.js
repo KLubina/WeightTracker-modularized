@@ -1,6 +1,6 @@
 // #region CSV Export
-import { allWeightsNewestFirst } from "./db.js";
-import { formatDateAsGerman, getCurrentDateAsISO } from "./utils.js";
+import { allWeightsNewestFirst } from "../data/db.js";
+import { formatDateAsGerman, getCurrentDateAsISO } from "../shared/utils.js";
 
 export function exportToCsv() {
   return allWeightsNewestFirst()

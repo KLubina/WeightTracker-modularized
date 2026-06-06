@@ -1,8 +1,8 @@
 // #region CRUD Operations
 // `ensureLoggedIn` checks removed (centralized UI gating)
-import { showAllWeights } from "./weights-view.js";
-import { weightInput } from "./dom.js";
-import { isEmptyString, extractDateFromISO } from "./utils.js";
+import { showAllWeights } from "../ui/weights-view.js";
+import { weightInput } from "../ui/dom.js";
+import { isEmptyString, extractDateFromISO } from "../shared/utils.js";
 import { weightsCollection, weightWithId } from "./db.js";
 
 export function addNewWeight() {

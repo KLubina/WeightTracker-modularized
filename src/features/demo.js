@@ -1,6 +1,6 @@
 // #region Demo Mode
-import { toggleUiState } from "./dom.js";
-import { renderWeightList, clearWeightList } from "./weights-view.js";
+import { toggleUiState } from "../ui/dom.js";
+import { renderWeightList, clearWeightList } from "../ui/weights-view.js";
 
 export function startDemoMode() {
   toggleUiState(true);

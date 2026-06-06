@@ -1,7 +1,7 @@
 // #region Display Weights
-import { allWeightsNewestFirst } from "./db.js";
+import { allWeightsNewestFirst } from "../data/db.js";
 import { weightList } from "./dom.js";
-import { formatDateAsGerman } from "./utils.js";
+import { formatDateAsGerman } from "../shared/utils.js";
 
 export function showAllWeights() {
   return allWeightsNewestFirst().get().then(renderWeightList);

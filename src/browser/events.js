@@ -1,5 +1,5 @@
 // #region Event Handlers & Wiring
-import { getElementById } from "../ui/dom.js";
+import { getElementById } from "./dom.js";
 import { loginWithGoogle } from "../auth/auth.js";
 import { startDemoMode } from "../features/demo.js";
 import { addNewWeight } from "../data/weights-crud.js";

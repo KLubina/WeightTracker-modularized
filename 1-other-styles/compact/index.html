@@ -1,0 +1,325 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <link rel="icon"
+        href="https://www.vhv.rs/dpng/d/410-4101831_weight-scale-png-picture-weight-scale-png-transparent.png"
+        type="image/png">
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-firestore-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.17.1/firebase-auth-compat.js"></script>
+    <title>WeightTracker</title>
+    <!-- #region CSS -->
+    <style>
+        body {
+            font-family: sans-serif;
+            padding: 20px;
+        }
+
+        div {
+            margin-bottom: 10px;
+        }
+
+        input[type="text"],
+        input[type="submit"] {
+            width: 100%;
+            padding: 60px;
+            font-size: 70px;
+        }
+
+        .weightEntry {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 30px;
+            border: 2px solid #ddd;
+            margin-bottom: 10px;
+            font-size: 40px;
+        }
+
+        .weightValue {
+            flex-grow: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .weightValue span {
+            cursor: pointer;
+            padding: 10px 0;
+        }
+
+        .date {
+            font-size: 30px !important;
+            color: #666;
+        }
+
+        .weightEntry button {
+            background: #ff4444;
+            color: white;
+            border: none;
+            padding: 20px 30px;
+            font-size: 50px;
+            cursor: pointer;
+            border-radius: 5px;
+        }
+
+        .weightEntry button:hover {
+            background: #cc0000;
+        }
+
+        .csv-btn {
+            background: #48bb78;
+            color: white;
+            border: none;
+            padding: 30px;
+            font-size: 40px;
+            cursor: pointer;
+            border-radius: 5px;
+            width: 100%;
+        }
+
+        .csv-btn:hover {
+            background: #38a169;
+        }
+
+        .card {
+            max-width: 720px;
+            margin: 0 auto 20px;
+            padding: 20px;
+            border: 2px solid #ddd;
+            border-radius: 10px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        .input-row {
+            display: flex;
+            gap: 10px;
+            align-items: stretch;
+        }
+
+        .input-row input[type="text"] {
+            flex: 1;
+        }
+
+        .input-row input[type="submit"] {
+            width: auto;
+        }
+
+        .actions-row {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .primary-btn,
+        .secondary-btn {
+            font-size: 32px;
+            padding: 20px 24px;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+        }
+
+        .primary-btn {
+            background: #1d4ed8;
+            color: white;
+        }
+
+        .primary-btn:hover {
+            background: #1e40af;
+        }
+
+        .secondary-btn {
+            background: #f1f5f9;
+            color: #0f172a;
+        }
+
+        .secondary-btn:hover {
+            background: #e2e8f0;
+        }
+    </style>
+    <!-- #endregion -->
+</head>
+
+<body>
+    <div id="loginContainer" class="card">
+        <button id="googleLoginBtn" class="primary-btn">Anmeldung nur für KLubina</button>
+        <button id="demoLoginBtn" class="secondary-btn">Demo für Externe</button>
+    </div>
+    <div id="appContainer" style="display:none;">
+        <div class="input-row">
+            <input type="text" id="weightInput" placeholder="Gewicht in kg">
+            <input type="submit" value="EINGEBEN" onclick="addNewWeight()">
+        </div>
+        <div id="weightList"></div>
+        <div class="actions-row">
+            <button onclick="exportToCsv()" class="csv-btn">CSV EXPORT</button>
+        </div>
+    </div>
+
+    <script>
+        // #region Firebase Setup
+        const firebaseConfig = {
+            apiKey: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            authDomain: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            projectId: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            storageBucket: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            messagingSenderId: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX",
+            appId: "XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXX"
+        };
+
+        firebase.initializeApp(firebaseConfig);
+
+        const auth = firebase.auth();
+        const googleProvider = new firebase.auth.GoogleAuthProvider();
+        const weightsCollection = firebase.firestore().collection("weights");
+        const allWeightsNewestFirst = () => weightsCollection.orderBy("datum", "desc");
+        // #endregion
+
+        // #region Page Elements & Helpers
+        const $ = (id) => document.getElementById(id);
+        const weightInput = $("weightInput");
+        const weightList = $("weightList");
+        const loginContainer = $("loginContainer");
+        const appContainer = $("appContainer");
+
+        const formatDateAsGerman = (date) => date.toLocaleDateString("de-DE");
+        const isoDateOnly = (isoString) => isoString.split("T")[0];
+        const csvFilename = () => `weight-tracker-${new Date().toISOString().split("T")[0]}.csv`;
+
+        function toggleUiState(isLoggedIn) {
+            loginContainer.style.display = isLoggedIn ? "none" : "flex";
+            appContainer.style.display = isLoggedIn ? "block" : "none";
+        }
+        // #endregion
+
+        // #region Rendering Logic
+        function showAllWeights() {
+            return allWeightsNewestFirst().get().then(renderWeightList);
+        }
+
+        function renderWeightList(weights) {
+            const rows = [];
+            weights.forEach(doc => rows.push(renderWeightRow(doc)));
+            weightList.innerHTML = rows.join("");
+        }
+
+        function renderWeightRow(doc) {
+            const { gewicht, datum } = doc.data();
+            const date = datum.toDate();
+
+            return `
+                <div class="weightEntry">
+                    <div class="weightValue">
+                        <span onclick="editWeight('${doc.id}', '${gewicht}')">${gewicht} kg</span>
+                        <span class="date" onclick="editDate('${doc.id}', '${date.toISOString()}')">${formatDateAsGerman(date)}</span>
+                    </div>
+                    <button onclick="deleteWeight('${doc.id}')">x</button>
+                </div>
+            `;
+        }
+
+        const clearWeightList = () => weightList.innerHTML = "";
+        // #endregion
+
+        // #region CRUD Operations
+        function addNewWeight() {
+            const gewicht = weightInput.value;
+            if (!gewicht) return;
+
+            return weightsCollection.add({ gewicht, datum: new Date() })
+                .then(() => weightInput.value = "")
+                .then(showAllWeights);
+        }
+
+        const deleteWeight = (id) => weightsCollection.doc(id).delete().then(showAllWeights);
+
+        function editWeight(id, currentWeight) {
+            const newWeight = prompt("New weight:", currentWeight);
+            const weightWasChanged = newWeight && newWeight !== currentWeight;
+            if (weightWasChanged) {
+                return weightsCollection.doc(id).update({ gewicht: newWeight }).then(showAllWeights);
+            }
+        }
+
+        function editDate(id, currentDateISO) {
+            const currentDate = isoDateOnly(currentDateISO);
+            const newDate = prompt("New date (YYYY-MM-DD):", currentDate);
+            const dateWasChanged = newDate && newDate !== currentDate;
+            if (dateWasChanged) {
+                return weightsCollection.doc(id).update({ datum: new Date(newDate) }).then(showAllWeights);
+            }
+        }
+        // #endregion
+
+        // #region CSV Export
+        function exportToCsv() {
+            return allWeightsNewestFirst().get()
+                .then(weights => {
+                    if (weights.empty) return;
+
+                    const rows = weights.docs.map(doc => {
+                        const { gewicht, datum } = doc.data();
+                        return `${formatDateAsGerman(datum.toDate())},${gewicht}`;
+                    });
+
+                    downloadCsv(["Date,Weight", ...rows].join("\n"));
+                })
+                .catch(() => alert("Error exporting data!"));
+        }
+
+        function downloadCsv(content) {
+            const blob = new Blob([content], { type: "text/csv;charset=utf-8;" });
+            const link = Object.assign(document.createElement("a"), {
+                href: URL.createObjectURL(blob),
+                download: csvFilename(),
+            });
+
+            link.click();
+            URL.revokeObjectURL(link.href);
+        }
+        // #endregion
+
+        // #region Authentication
+        function handleAuthChanged(user) {
+            toggleUiState(Boolean(user));
+            user ? showAllWeights() : clearWeightList();
+        }
+
+        const loginWithGoogle = () => auth.signInWithPopup(googleProvider)
+            .catch(error => alert("Login fehlgeschlagen: " + error.message));
+        // #endregion
+
+        // #region Demo Mode
+        function startDemoMode() {
+            toggleUiState(true);
+
+            const today = new Date();
+            const demoWeights = Array.from({ length: 10 }, (_, i) => {
+                const date = new Date(today);
+                date.setDate(today.getDate() - i * 10);
+
+                return {
+                    id: `demo${i}`,
+                    data: () => ({ gewicht: 85.5 + i * 0.7, datum: { toDate: () => date } }),
+                };
+            });
+
+            renderWeightList(demoWeights);
+        }
+        // #endregion
+
+        // #region Event Listeners & Startup
+        weightInput.addEventListener("keypress", (event) => {
+            if (event.key === "Enter") addNewWeight();
+        });
+        $("googleLoginBtn").addEventListener("click", loginWithGoogle);
+        $("demoLoginBtn").addEventListener("click", startDemoMode);
+        auth.onAuthStateChanged(handleAuthChanged);
+        // #endregion
+    </script>
+</body>
+
+</html>
